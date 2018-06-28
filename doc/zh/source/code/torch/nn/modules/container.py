@@ -123,7 +123,7 @@ class ModuleList(Module):
         return self
 
     def extend(self, modules):
-        r"""最后添加 Python list 中的模块.
+        r"""在最后添加 Python list 中的模块.
 
         Arguments:
             modules (list): 要被添加的模块列表
@@ -143,7 +143,7 @@ class ParameterList(Module):
     ParameterList 可以像普通的 Python list 那样被索引, 但是它所包含的参数被正确的注册了, 并且所有的 Module 方法都可见的.
 
     Arguments:
-        modules (list, optional): 要被添加的 :class:`~torch.nn.Parameter`` 列表
+        modules (list, optional): 要被添加的 :class:`~torch.nn.Parameter` 列表
 
     Example::
 
@@ -184,7 +184,7 @@ class ParameterList(Module):
         return self.extend(parameters)
 
     def append(self, parameter):
-        """Appends a given parameter at the end of the list.
+        """添加一个指定的参数到 list 尾部.
 
         Arguments:
             parameter (nn.Parameter): parameter to append
@@ -193,7 +193,7 @@ class ParameterList(Module):
         return self
 
     def extend(self, parameters):
-        """Appends parameters from a Python list at the end.
+        """在最后添加 Python list 中的参数.
 
         Arguments:
             parameters (list): list of parameters to append

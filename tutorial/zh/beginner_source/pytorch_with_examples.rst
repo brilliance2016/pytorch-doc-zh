@@ -1,26 +1,22 @@
-Learning PyTorch with Examples
+跟着例子学习 PyTorch
 ******************************
-**Author**: `Justin Johnson <https://github.com/jcjohnson/pytorch-examples>`_ 
+**Author**: `Justin Johnson <https://github.com/jcjohnson/pytorch-examples>`_
 
-This tutorial introduces the fundamental concepts of
-`PyTorch <https://github.com/pytorch/pytorch>`__ through self-contained
-examples.
+这个教程通过一些单独的示例介绍了 `PyTorch <https://github.com/pytorch/pytorch>`__ 的基本概念. 
 
-At its core, PyTorch provides two main features: 
+PyTorch 的核心部分提供了两个主要功能: 
 
-- An n-dimensional Tensor, similar to numpy but can run on GPUs 
-- Automatic differentiation for building and training neural networks
+- 一个类似于 numpy 的n维张量, 但可以在 GPU 上运行
+- 为建立和训练神经网络自动微分
 
-We will use a fully-connected ReLU network as our running example. The
-network will have a single hidden layer, and will be trained with
-gradient descent to fit random data by minimizing the Euclidean distance
-between the network output and the true output.
+我们将使用全连接的 ReLU 网络作为我们的运行示例. 该网络将有一个隐藏层, 
+并将使用梯度下降训练去最小化随机数字的预测输出和真实输出之间的欧式距离. 
 
 .. Note::
-	You can browse the individual examples at the 
-	:ref:`end of this page <examples-download>`.
+	你可以下载这些单独的例子在页面的底端
+	:ref:`<examples-download>`.
 
-.. contents:: Table of Contents
+.. contents:: 本章内容目录
 	:local:
 
 Tensors
@@ -29,15 +25,11 @@ Tensors
 Warm-up: numpy
 --------------
 
-Before introducing PyTorch, we will first implement the network using
-numpy.
+在介绍 PyTorch 之前, 我们先使用 numpy 实现网络. 
 
-Numpy provides an n-dimensional array object, and many functions for
-manipulating these arrays. Numpy is a generic framework for scientific
-computing; it does not know anything about computation graphs, or deep
-learning, or gradients. However we can easily use numpy to fit a
-two-layer network to random data by manually implementing the forward
-and backward passes through the network using numpy operations:
+Numpy 提供了一个n维的数组对象, 并提供了许多操纵这个数组对象的函数.  Numpy 是科学计算的通用框架;
+Numpy 数组没有计算图, 也没有深度学习, 也没有梯度下降等方法实现的接口. 但是我们仍然可以很容易地使用 numpy 生成随机数据
+并将产生的数据传入双层的神经网络, 并使用 numpy 来实现这个网络的正向传播和反向传播:
 
 .. includenodoc:: /beginner/examples_tensor/two_layer_net_numpy.py
 
@@ -45,26 +37,19 @@ and backward passes through the network using numpy operations:
 PyTorch: Tensors
 ----------------
 
-Numpy is a great framework, but it cannot utilize GPUs to accelerate its
-numerical computations. For modern deep neural networks, GPUs often
-provide speedups of `50x or
-greater <https://github.com/jcjohnson/cnn-benchmarks>`__, so
-unfortunately numpy won't be enough for modern deep learning.
+Numpy 是一个伟大的框架, 但它不能利用 GPU 加速它数值计算.  对于现代的深度神经网络, 
+GPU 往往是提供 `50倍或更大的加速 <https://github.com/jcjohnson/cnn-benchmarks>`__,
+所以不幸的是, numpy 不足以满足现在深度学习的需求. 
 
-Here we introduce the most fundamental PyTorch concept: the **Tensor**.
-A PyTorch Tensor is conceptually identical to a numpy array: a Tensor is
-an n-dimensional array, and PyTorch provides many functions for
-operating on these Tensors. Like numpy arrays, PyTorch Tensors do not
-know anything about deep learning or computational graphs or gradients;
-they are a generic tool for scientific computing.
+这里我们介绍一下最基本的 PyTorch 概念:  **Tensor** . PyTorch Tensor 在概念上与 numpy 数组相同: 
+Tensor 是一个n维数组, PyTorch 也提供了很多能在这些 Tensor 上操作的函数. 像 numpy 数组一样, PyTorch Tensor
+也和numpy的数组对象一样不了解深度学习,计算图和梯度下降；它们只是科学计算的通用工具. 
 
-However unlike numpy, PyTorch Tensors can utilize GPUs to accelerate
-their numeric computations. To run a PyTorch Tensor on GPU, you simply
-need to cast it to a new datatype.
+然而不像 numpy, PyTorch Tensor 可以利用 GPU 加速他们的数字计算. 要在 GPU 上运行
+PyTorch 张量, 只需将其转换为新的数据类型. 
 
-Here we use PyTorch Tensors to fit a two-layer network to random data.
-Like the numpy example above we need to manually implement the forward
-and backward passes through the network:
+在这里, 我们将 PyTorch Tensor 生成的随机数据传入双层的神经网络. 就像上面的 numpy 例子一样, 
+我们需要手动实现网络的正向传播和反向传播: 
 
 .. includenodoc:: /beginner/examples_tensor/two_layer_net_tensor.py
 
@@ -75,94 +60,62 @@ Autograd
 PyTorch: Variables and autograd
 -------------------------------
 
-In the above examples, we had to manually implement both the forward and
-backward passes of our neural network. Manually implementing the
-backward pass is not a big deal for a small two-layer network, but can
-quickly get very hairy for large complex networks.
+在上面的例子中, 我们不得不手写实现神经网络的正反向传播的代码. 而手写实现反向传播的代码对于一个
+小型的双层网络来说是没什么大问题的, 但是在面对大型复杂网络手写方向传播代码就会变得很棘手. 
 
-Thankfully, we can use `automatic
-differentiation <https://en.wikipedia.org/wiki/Automatic_differentiation>`__
-to automate the computation of backward passes in neural networks. The
-**autograd** package in PyTorch provides exactly this functionality.
-When using autograd, the forward pass of your network will define a
-**computational graph**; nodes in the graph will be Tensors, and edges
-will be functions that produce output Tensors from input Tensors.
-Backpropagating through this graph then allows you to easily compute
-gradients.
+谢天谢地, 我们可以使用 `自动微分 <https://en.wikipedia.org/wiki/Automatic_differentiation>`__
+来自动化的计算神经网络中的后向传播.  PyTorch 中的 **autograd** 包提供自动微分了这个功能. 使用 autograd 时, 
+网络的正向传播将定义一个 **计算图** ; Tensor 将会成为图中的节点,从输入 Tensor 产生输出 Tensor 的函数将会用图中的( Edge )依赖边表示. 
+通过计算图来反向传播可以让您轻松计算梯度. 
 
-This sounds complicated, it's pretty simple to use in practice. We wrap
-our PyTorch Tensors in **Variable** objects; a Variable represents a
-node in a computational graph. If ``x`` is a Variable then ``x.data`` is
-a Tensor, and ``x.grad`` is another Variable holding the gradient of
-``x`` with respect to some scalar value.
+这听起来很复杂, 但是在实践中使用起来相当简单. 我们将 PyTorch 的 Tensor 包装成在 **Variable** 对象；
+一个 Variable 代表一个计算图中的节点. 如果 ``x`` 是一个 Variable , 则 ``x.data`` 是一个 Tensor , 
+而 ``x.grad`` 是另外一个包含关于 ``x`` 的梯度的 Variable .
 
-PyTorch Variables have the same API as PyTorch Tensors: (almost) any
-operation that you can perform on a Tensor also works on Variables; the
-difference is that using Variables defines a computational graph,
-allowing you to automatically compute gradients.
+PyTorch Variable 与 PyTorch Tensor 具有相同的 API:  (几乎) 任何您可以在 Tensor 上执行的
+操作也适用于 Variable ；该区别在于如果你使用 Variable 定义了一个计算图, Pytorch 允许您自动计算梯度. 
 
-Here we use PyTorch Variables and autograd to implement our two-layer
-network; now we no longer need to manually implement the backward pass
-through the network:
+这里我们使用 PyTorch 的 Variable 和自动微分来实现我们的双层网络；现在我们不再需要手写任何关于
+计算网络反向传播的代码: 
 
 .. includenodoc:: /beginner/examples_autograd/two_layer_net_autograd.py
 
 PyTorch: Defining new autograd functions
 ----------------------------------------
 
-Under the hood, each primitive autograd operator is really two functions
-that operate on Tensors. The **forward** function computes output
-Tensors from input Tensors. The **backward** function receives the
-gradient of the output Tensors with respect to some scalar value, and
-computes the gradient of the input Tensors with respect to that same
-scalar value.
+在这层覆盖下, 每个原始的 autograd 操作符实际上是两个函数在张量上运行.  **前向传播**
+函数从输入的 Tensor 计算将要输出的 Tensor .  **后向传播** 函数接收上一个 Tensor 关于 scalar 的梯度, 以
+及计算当前输入 Tensor 对相同 scalar 值的梯度. 
 
-In PyTorch we can easily define our own autograd operator by defining a
-subclass of ``torch.autograd.Function`` and implementing the ``forward``
-and ``backward`` functions. We can then use our new autograd operator by
-constructing an instance and calling it like a function, passing
-Variables containing input data.
+在 PyTorch 中, 我们可以通过定义一个 ``torch.autograd.Function`` 的子类和
+实现 ``前向传播`` 和 ``后向传播`` 函数来轻松定义自己的 autograd 操作符. 然后我们可以
+使用我们新的 autograd 操作符构造一个实例并将其作为一个函数调用, 传递用 Variable 包装了的输入数据的. 
 
-In this example we define our own custom autograd function for
-performing the ReLU nonlinearity, and use it to implement our two-layer
-network:
+在这个例子中我们定义了我们自己的 autograd 函数来执行 ReLU 非线性函数, 并用它来实现我们的双层网络: 
 
 .. includenodoc:: /beginner/examples_autograd/two_layer_net_custom_function.py
 
 TensorFlow: Static Graphs
 -------------------------
 
-PyTorch autograd looks a lot like TensorFlow: in both frameworks we
-define a computational graph, and use automatic differentiation to
-compute gradients. The biggest difference between the two is that
-TensorFlow's computational graphs are **static** and PyTorch uses
-**dynamic** computational graphs.
+Pytorch 的 autograd 看上去有点像 TensorFlow .两个框架的共同点是他们都是定义了自己的计算图. 
+和使用自动求微分的方法来计算梯度. 两者之间最大的不同在于 TensorFlow 的计算图是 **静态的**
+和 PyTorch 的计算图是 **动态的** . 
 
-In TensorFlow, we define the computational graph once and then execute
-the same graph over and over again, possibly feeding different input
-data to the graph. In PyTorch, each forward pass defines a new
-computational graph.
+在 TensorFlow 中, 我们只定义了一次计算图,然后重复执行同一张计算图, 只是输入计算图的数据不同而已. 
+而在 PyTorch 中, 每个正向传播都会定义一个新的计算图. 
 
-Static graphs are nice because you can optimize the graph up front; for
-example a framework might decide to fuse some graph operations for
-efficiency, or to come up with a strategy for distributing the graph
-across many GPUs or many machines. If you are reusing the same graph
-over and over, then this potentially costly up-front optimization can be
-amortized as the same graph is rerun over and over.
+静态图很好, 因为您可以预先优化计算图；例如一个框架可能会为了计算效率决定融合一些计算图操作(像:Fused Graph), 或提出
+一个多卡或者多机的分布式计算图的策略. 如果您正在重复使用相同的计算图, 那么这个潜在的
+昂贵的前期优化可以使用静态图来得以减轻. 
 
-One aspect where static and dynamic graphs differ is control flow. For
-some models we may wish to perform different computation for each data
-point; for example a recurrent network might be unrolled for different
-numbers of time steps for each data point; this unrolling can be
-implemented as a loop. With a static graph the loop construct needs to
-be a part of the graph; for this reason TensorFlow provides operators
-such as ``tf.scan`` for embedding loops into the graph. With dynamic
-graphs the situation is simpler: since we build graphs on-the-fly for
-each example, we can use normal imperative flow control to perform
-computation that differs for each input.
+一方面来说, 静态图和动态图的控制流是不同的. 对于有些模型我们可能希望对每个数据点执行不同
+的计算；例如循环神经网络可能会被展开为对每个数据的不同的长度的时间步数；这个展开可以用循
+环来实现. 循环结构的静态图需要成为计算图的一部分；为此 TensorFlow 提供 ``tf.scan`` 操作符
+用于将重复的结构嵌入到计算图中. 而动态计算图的情况比较简单: 因为我们设计的计算图可以对每个不同长度的输入随机应变. 
+我们可以使用正常的命令式代码对每个不同长度的输入执行计算. 
 
-To contrast with the PyTorch autograd example above, here we use
-TensorFlow to fit a simple two-layer net:
+为了与上面的 PyTorch autograd 例子进行对比, 我们在这里也使用 TensorFlow 创建简单的两层神经网络: 
 
 .. includenodoc:: /beginner/examples_autograd/tf_two_layer_net.py
 
@@ -172,82 +125,58 @@ TensorFlow to fit a simple two-layer net:
 PyTorch: nn
 -----------
 
-Computational graphs and autograd are a very powerful paradigm for
-defining complex operators and automatically taking derivatives; however
-for large neural networks raw autograd can be a bit too low-level.
+计算图( Computational graphs )和 autograd 是一个非常强大的定义复杂的运算符并自动地导出的范式；然而对于
+大型的神经网络, 原始的 autograd 仍然显得有点太低级. 
 
-When building neural networks we frequently think of arranging the
-computation into **layers**, some of which have **learnable parameters**
-which will be optimized during learning.
+当我们创建神经网络时, 我们经常思考如何设计安排 ** layer ** , 以及一些在训练过程中网络会学习到的 ** learnable parameters **
 
-In TensorFlow, packages like
-`Keras <https://github.com/fchollet/keras>`__,
+
+在TensorFlow中, 像 `Keras <https://github.com/fchollet/keras>`__,
 `TensorFlow-Slim <https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/slim>`__,
-and `TFLearn <http://tflearn.org/>`__ provide higher-level abstractions
-over raw computational graphs that are useful for building neural
-networks.
+和 `TFLearn <http://tflearn.org/>`__ 通过构建对神经网络有用的原始计算图提供更高层次的抽象. 
 
-In PyTorch, the ``nn`` package serves this same purpose. The ``nn``
-package defines a set of **Modules**, which are roughly equivalent to
-neural network layers. A Module receives input Variables and computes
-output Variables, but may also hold internal state such as Variables
-containing learnable parameters. The ``nn`` package also defines a set
-of useful loss functions that are commonly used when training neural
-networks.
+在 PyTorch 中, ``nn`` 包起了同样的作用.  ``nn`` 包定义了一组 ** Modules ** , 大致相当于神经网络层. 
+模块接收输入变量并进行计算输出变量, 但也可以保持内部状态, 如 用 Variable 包装的 learnable parameters .  ``nn`` 包
+也定义了一系列在训练神经网络时比较常用的损失函数. 
 
-In this example we use the ``nn`` package to implement our two-layer
-network:
+在这个例子中, 我们使用 ``nn`` 包来实现我们的双层神经网络: 
 
 .. includenodoc:: /beginner/examples_nn/two_layer_net_nn.py
 
 PyTorch: optim
 --------------
 
-Up to this point we have updated the weights of our models by manually
-mutating the ``.data`` member for Variables holding learnable
-parameters. This is not a huge burden for simple optimization algorithms
-like stochastic gradient descent, but in practice we often train neural
-networks using more sophisticated optimizers like AdaGrad, RMSProp,
-Adam, etc.
+到目前为止, 我们一直通过手动更新的方法更新模型的可学习参数( learnable parameters )的权重 ``.data``
+这对于简单的优化算法像随机梯度下降来还算轻松, 但是在实际中我们经常使用更巧妙的
+优化器来训练神经网络, 如 AdaGrad, RMSProp, Adam 等. 
 
-The ``optim`` package in PyTorch abstracts the idea of an optimization
-algorithm and provides implementations of commonly used optimization
-algorithms.
+PyTorch 中的 ``optim`` 包包含了一些优化器的算法, 并提供了一些常用优化器的使用. 
 
-In this example we will use the ``nn`` package to define our model as
-before, but we will optimize the model using the Adam algorithm provided
-by the ``optim`` package:
+在这个例子中, 虽然我们将像之前一样使用 ``nn`` 包来定义我们的模型, 但是我们这次将使用由 ``optim`` 包提供的Adam算法来更新模型: 
 
 .. includenodoc:: /beginner/examples_nn/two_layer_net_optim.py
 
 PyTorch: Custom nn Modules
 --------------------------
 
-Sometimes you will want to specify models that are more complex than a
-sequence of existing Modules; for these cases you can define your own
-Modules by subclassing ``nn.Module`` and defining a ``forward`` which
-receives input Variables and produces output Variables using other
-modules or other autograd operations on Variables.
+有时你会想要使用比现有模块组合更复杂的特殊模型；对于这些情况, 你可以
+通过继承 ``nn.Module`` 来定义你自己的模块, 并定义一个 ``forward``
+来实现模块接收输入 Variable 并使用其他模块输出的 Variable 和 其他 autograd 操作. 
 
-In this example we implement our two-layer network as a custom Module
-subclass:
+在这个例子中, 我们使用了我们之前已经实现的双层网络来作为一个自定义的模块子类: 
 
 .. includenodoc:: /beginner/examples_nn/two_layer_net_module.py
 
 PyTorch: Control Flow + Weight Sharing
 --------------------------------------
 
-As an example of dynamic graphs and weight sharing, we implement a very
-strange model: a fully-connected ReLU network that on each forward pass
-chooses a random number between 1 and 4 and uses that many hidden
-layers, reusing the same weights multiple times to compute the innermost
-hidden layers.
+作为一个动态图和权值共享的例子, 我们实现一个奇葩的模型: 随机1-4次重复搭建同个正向传播的全连接
+的 ReLU 网络, 并且多个隐藏层使用相同的权重来计算最内层隐藏层(译者注: 这里的相同权重,是指随机1-4次重复搭建的这个middle_linear). 
 
-For this model we can use normal Python flow control to implement the loop,
-and we can implement weight sharing among the innermost layers by simply
-reusing the same Module multiple times when defining the forward pass.
+对于这个模型, 我们可以使用普通的 Python 流程控制语句来实现循环, 而且我们可以在定义前向传
+播时通过简单地重复使用相同的模块实现 middle_linear 层的权重共享. 
 
-We can easily implement this model as a Module subclass:
+我们可以很容易地将这个模型作为 Module 子类来实现: 
 
 .. includenodoc:: /beginner/examples_nn/dynamic_net.py
 
@@ -257,7 +186,7 @@ We can easily implement this model as a Module subclass:
 Examples
 ========
 
-You can browse the above examples here.
+你可以在这里浏览上网提到的例子
 
 Tensors
 -------

@@ -24,50 +24,46 @@ else:
 class DistributedDataParallel(Module):
     r"""在模块级别实现分布式数据并行.
 
-    此容器通过在批次维度中分块，将输入分割到指定设备上，从而并行化给定模块的应用程序.
-    该模块被复制到每台机器和每个设备上，每个这样的副本处理一部分输入.在向后传递期间，
+    此容器通过在批次维度中分块, 将输入分割到指定设备上, 从而并行化给定模块的应用程序.
+    该模块被复制到每台机器和每个设备上, 每个这样的副本处理一部分输入.在向后传递期间, 
     来自每个节点的梯度被平均.
 
-    batch size 应该大于GPUs的数量.同时也应该是GPU数量的整数倍，以便每个块大小相同
-    （以便每个GPU处理相同数量的样本）.
+    batch size 应该大于 GPUs 的数量.同时也应该是 GPU 数量的整数倍, 以便每个块大小
+    相同（以便每个 GPU 处理相同数量的样本）.
 
     引用 ::ref:`distributed-basics`  和  :ref:`cuda-nn-dataparallel-instead`.
     对输入的约束和 :class:`torch.nn.DataParallel` 中一样.
 
-    创建这个类需要分布式包已经在process group模式下被初始化
-    (引用 :func:`torch.distributed.init_process_group`).
+    创建这个类需要分布式包已经在 process group 模式下被初始化 (引用 :func:`torch.distributed.init_process_group`).
 
-    .. 警告::
-        这个模块只能和``gloo``后端一起工作.
+    .. warning::
+        这个模块只能和 ``gloo`` 后端一起工作.
 
-    .. 警告::
-        构造器，转发方法和输出（或者这个模块的输出功能）的区分是分布式同步点.
-        考虑到不同的进程可能会执行不同的代码.
+    .. warning::
+        构造器, 转发方法和输出（或者这个模块的输出功能）的区分是分布式同步点.考虑到不同的
+        进程可能会执行不同的代码.
 
-    .. 警告::
-        该模块假设所有参数在创建时都在模型中注册.之后不应该添加或删除参数.
-        同样适用于缓冲区.
+    .. warning::
+        该模块假设所有参数在创建时都在模型中注册.之后不应该添加或删除参数.同样适用于缓冲区.
 
-    .. 警告::
+    .. warning::
         这个模块假定所有的缓冲区和梯度都是密集的.
 
-    .. 警告::
-        这个模块不能用于 ：func：`torch.autograd.grad` （即只有在参数的 ``.grad`` 属性中
+    .. warning::
+        这个模块不能用于 :func:`torch.autograd.grad`（即只有在参数的 ``.grad`` 属性中
         累积梯度才能使用）.
 
-    .. 注意::
+    .. note::
+        参数永远不会在进程之间广播.模块在梯度上执行全部优化步骤, 并假定它们将以相同的方式在
+        所有进程中进行优化.缓冲区（e.g. BatchNorm stats）在等级0的过程中从模块广播到系统
+        中的每个迭代中的所有其他副本.
 
-        参数永远不会在进程之间广播.模块在梯度上执行全部优化步骤，并假定它们将以相同的
-        方式在所有进程中进行优化.缓冲区（e.g. BatchNorm stats）在等级0的过程中从模
-        块广播到系统中的每个迭代中的所有其他副本.
-
-
-    参数 :
+    Args:
         module: 需要并行的模型
         device_ids: CUDA devices (default: all devices)
         output_device: device location of output (default: device_ids[0])
 
-    示例 ::
+    Example::
 
         >>> torch.distributed.init_process_group(world_size=4, init_method='...')
         >>> net = torch.nn.DistributedDataParallel(model)
@@ -90,8 +86,8 @@ class DistributedDataParallel(Module):
             dist.broadcast(p, 0)
 
         if len(device_ids) > 1:
-            # TODO: 我们不需要在这里复制参数。 他们总是在广播中使用大块进行广播，
-            #所以最好不要用这些小块来污染高速缓存。
+            # TODO : 我们不需要在这里复制参数. 他们总是在广播中使用大块进行广播, 
+            # 所以最好不要用这些小块来污染高速缓存.
             self._module_copies = replicate(self.module, self.device_ids)
             self._module_copies[0] = self.module
             for module_copy in self._module_copies[1:]:
@@ -102,7 +98,7 @@ class DistributedDataParallel(Module):
             self._module_copies = [self.module]
 
         # 将参数拆分成将会合并减少的存储桶
-        # TODO: 不同的类型需要不同的桶
+        # TODO :不同的类型需要不同的桶
         t = None
         for p in self.module.parameters():
             tp = type(p.data)
@@ -231,7 +227,7 @@ class DistributedDataParallel(Module):
         if any(evt is None for evt in dev_events):
             return
 
-        # 排队减少，并确保向后等待
+        # 排队减少, 并确保向后等待
         event = threading.Event()
         self._reduction_queues[bucket_idx].put((dev_buckets, dev_events, event))
         Variable._execution_engine.queue_callback(lambda: event.wait())
@@ -244,7 +240,7 @@ class DistributedDataParallel(Module):
             self.reduced = [False] * len(self.bucket_sizes)
 
             def sync_reduction_streams():
-                # 我们只需要与第一个同步，但这样做更安全
+                # 我们只需要与第一个同步, 但这样做更安全
                 # 如果我们改变平行工作的方式
                 r_streams = zip(*self._reduction_streams)
                 for dev_id, default_stream, dev_r_streams in zip(self.device_ids, self._default_streams, r_streams):
@@ -296,7 +292,7 @@ class DistributedDataParallel(Module):
                 stream.synchronize()
             nccl.reduce(dev_coalesced, root=0, streams=nccl_streams)
 
-            # 从现在起，我们只会在第一个设备上工作（从设备ID）
+            # 从现在起, 我们只会在第一个设备上工作（从设备ID）
             grad_batch = dev_grad_batch[0]
             coalesced = dev_coalesced[0]
             reduce_stream = reduction_streams[0]
